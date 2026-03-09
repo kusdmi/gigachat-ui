@@ -1,0 +1,47 @@
+.sidebar {
+  width: 260px;
+  background-color: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  flex-shrink: 0;
+}
+
+/* Мобильная версия */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+    padding-top: 80px;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+}
+
+.header {
+  margin-bottom: 1rem;
+}
+
+
+.header button {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+  .header button {
+    padding: 0.875rem 1rem;
+    font-size: 1.125rem; 
+  }
+}

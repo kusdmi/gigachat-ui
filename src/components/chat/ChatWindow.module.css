@@ -1,0 +1,38 @@
+.window {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background-color: var(--color-bg);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  flex-shrink: 0;
+}
+
+.title {
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+/* На мобильных скрываем кнопку настроек в шапке и добавляем отступ */
+@media (max-width: 768px) {
+  .desktopSettingsButton {
+    display: none;
+  }
+
+  .header {
+    margin-top: 70px; /* отступ под фиксированную верхнюю панель (подберите точно) */
+  }
+}
