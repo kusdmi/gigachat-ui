@@ -3,35 +3,40 @@ import ReactMarkdown from 'react-markdown';
 import styles from './Message.module.css';
 
 interface MessageProps {
-  role: 'user' | 'assistant';
+  variant: 'user' | 'assistant';
   content: string;
-  timestamp?: string;
+  timestamp?: number;
 }
 
-const Message: React.FC<MessageProps> = ({ role, content }) => {
+const formatTime = (ts: number) =>
+  new Date(ts).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+
+const Message: React.FC<MessageProps> = ({ variant, content, timestamp }) => {
   const [showCopy, setShowCopy] = useState(false);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(content);
-    // можно добавить уведомление
   };
 
   return (
     <div
-      className={`${styles.message} ${styles[role]}`}
+      className={`${styles.message} ${styles[variant]}`}
       onMouseEnter={() => setShowCopy(true)}
       onMouseLeave={() => setShowCopy(false)}
     >
-      {role === 'assistant' && (
+      {variant === 'assistant' && (
         <div className={styles.avatar}>🤖</div>
       )}
       <div className={styles.bubble}>
         <div className={styles.header}>
           <span className={styles.name}>
-            {role === 'user' ? 'Вы' : 'GigaChat'}
+            {variant === 'user' ? 'Вы' : 'GigaChat'}
+            {timestamp !== undefined && (
+              <span className={styles.time}> · {formatTime(timestamp)}</span>
+            )}
           </span>
           {showCopy && (
-            <button className={styles.copyBtn} onClick={handleCopy}>
+            <button type="button" className={styles.copyBtn} onClick={handleCopy}>
               📋
             </button>
           )}

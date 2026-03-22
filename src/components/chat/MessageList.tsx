@@ -1,29 +1,37 @@
-import React from 'react';
+import React, { type RefObject } from 'react';
 import Message from './Message';
 import TypingIndicator from './TypingIndicator';
+import EmptyState from './EmptyState';
 import styles from './MessageList.module.css';
+import type { ChatMessage } from '../../types/chat';
 
-// Моковые сообщения
-const mockMessages = [
-  { role: 'user', content: 'Привет, как дела?' },
-  { role: 'assistant', content: 'Привет! Я GigaChat. Чем могу помочь?' },
-  { role: 'user', content: 'Расскажи про React и TypeScript' },
-  { role: 'assistant', content: 'React и TypeScript отлично сочетаются. Вот пример компонента:\n\n```tsx\ninterface Props {\n  name: string;\n}\n\nconst Greeting: React.FC<Props> = ({ name }) => <div>Hello, {name}</div>;\n```' },
-  { role: 'user', content: 'А как использовать markdown?' },
-  { role: 'assistant', content: '**Markdown** позволяет делать *курсив*, списки и код.' },
-];
+interface MessageListProps {
+  messages: ChatMessage[];
+  isLoading: boolean;
+  messagesEndRef: RefObject<HTMLDivElement | null>;
+}
 
-const MessageList: React.FC = () => {
+const MessageList: React.FC<MessageListProps> = ({
+  messages,
+  isLoading,
+  messagesEndRef,
+}) => {
   return (
     <div className={styles.list}>
-      {mockMessages.map((msg, index) => (
-        <Message
-          key={index}
-          role={msg.role as 'user' | 'assistant'}
-          content={msg.content}
-        />
-      ))}
-      <TypingIndicator isVisible={true} />
+      {messages.length === 0 && !isLoading ? (
+        <EmptyState />
+      ) : (
+        messages.map((msg) => (
+          <Message
+            key={msg.id}
+            variant={msg.role}
+            content={msg.content}
+            timestamp={msg.timestamp}
+          />
+        ))
+      )}
+      <TypingIndicator isVisible={isLoading} />
+      <div ref={messagesEndRef} aria-hidden="true" />
     </div>
   );
 };

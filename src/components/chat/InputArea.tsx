@@ -2,7 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import Button from '../ui/Button';
 import styles from './InputArea.module.css';
 
-const InputArea: React.FC = () => {
+interface InputAreaProps {
+  onSend: (text: string) => void;
+  isLoading: boolean;
+}
+
+const InputArea: React.FC<InputAreaProps> = ({ onSend, isLoading }) => {
   const [input, setInput] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -16,21 +21,27 @@ const InputArea: React.FC = () => {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      if (input.trim()) {
+      if (input.trim() && !isLoading) {
         handleSend();
       }
     }
   };
 
   const handleSend = () => {
-    console.log('Send:', input);
+    const trimmed = input.trim();
+    if (!trimmed || isLoading) return;
+    onSend(trimmed);
     setInput('');
   };
+
+  const disabled = !input.trim() || isLoading;
 
   return (
     <div className={styles.container}>
       <div className={styles.actions}>
-        <button className={styles.attachBtn}>📎</button>
+        <button type="button" className={styles.attachBtn} disabled={isLoading}>
+          📎
+        </button>
       </div>
       <textarea
         ref={textareaRef}
@@ -40,16 +51,13 @@ const InputArea: React.FC = () => {
         placeholder="Введите сообщение..."
         rows={1}
         className={styles.textarea}
+        disabled={isLoading}
       />
       <div className={styles.actions}>
-        <Button
-          onClick={handleSend}
-          disabled={!input.trim()}
-          size="sm"
-        >
+        <Button onClick={handleSend} disabled={disabled} size="sm">
           ➤
         </Button>
-        <Button variant="secondary" size="sm">
+        <Button variant="secondary" size="sm" disabled={isLoading}>
           ⏹
         </Button>
       </div>

@@ -60,6 +60,11 @@
   font-weight: 500;
 }
 
+.time {
+  font-weight: 400;
+  opacity: 0.85;
+}
+
 .copyBtn {
   background: none;
   border: none;
