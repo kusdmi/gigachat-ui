@@ -1,12 +1,12 @@
 import React, { type RefObject } from 'react';
-import Message from './Message';
+import MessageBubble from './Message';
 import TypingIndicator from './TypingIndicator';
 import EmptyState from './EmptyState';
 import styles from './MessageList.module.css';
-import type { ChatMessage } from '../../types/chat';
+import type { Message } from '../../types/message';
 
 interface MessageListProps {
-  messages: ChatMessage[];
+  messages: Message[];
   isLoading: boolean;
   messagesEndRef: RefObject<HTMLDivElement | null>;
 }
@@ -22,7 +22,7 @@ const MessageList: React.FC<MessageListProps> = ({
         <EmptyState />
       ) : (
         messages.map((msg) => (
-          <Message
+          <MessageBubble
             key={msg.id}
             variant={msg.role}
             content={msg.content}

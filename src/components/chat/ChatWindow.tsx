@@ -3,14 +3,14 @@ import MessageList from './MessageList';
 import InputArea from './InputArea';
 import Button from '../ui/Button';
 import styles from './ChatWindow.module.css';
-import type { ChatMessage } from '../../types/chat';
+import type { Message } from '../../types/message';
 
 interface ChatWindowProps {
   onOpenSettings?: () => void;
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({ onOpenSettings }) => {
-  const [messages, setMessages] = React.useState<ChatMessage[]>([]);
+  const [messages, setMessages] = React.useState<Message[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const replyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -33,7 +33,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onOpenSettings }) => {
     if (!trimmed || awaitingAssistantRef.current) return;
     awaitingAssistantRef.current = true;
 
-    const userMessage: ChatMessage = {
+    const userMessage: Message = {
       id: crypto.randomUUID(),
       role: 'user',
       content: trimmed,
@@ -50,7 +50,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onOpenSettings }) => {
     const delayMs = 1000 + Math.random() * 1000;
     replyTimeoutRef.current = window.setTimeout(() => {
       replyTimeoutRef.current = null;
-      const assistantMessage: ChatMessage = {
+      const assistantMessage: Message = {
         id: crypto.randomUUID(),
         role: 'assistant',
         content:
