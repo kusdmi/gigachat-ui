@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Button from '../ui/Button';
 import Toggle from '../ui/Toggle';
 import Slider from '../ui/Slider';
@@ -24,6 +24,10 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
   const [systemPrompt, setSystemPrompt] = useState('Ты полезный ассистент.');
   const [darkTheme, setDarkTheme] = useState(initialTheme);
 
+  useEffect(() => {
+    setDarkTheme(initialTheme);
+  }, [initialTheme]);
+
   const handleSave = () => {
     console.log({
       model,
@@ -33,7 +37,6 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
       systemPrompt,
       darkTheme,
     });
-    onThemeChange(darkTheme);
     onClose();
   };
 
@@ -43,7 +46,13 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
     setTopP(0.9);
     setMaxTokens(2048);
     setSystemPrompt('Ты полезный ассистент.');
-    setDarkTheme(initialTheme);
+    setDarkTheme(false);
+    onThemeChange(false);
+  };
+
+  const handleThemeToggle = (isDark: boolean) => {
+    setDarkTheme(isDark);
+    onThemeChange(isDark);
   };
 
   if (!isOpen) return null;
@@ -53,9 +62,11 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
       <div className={styles.drawer} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
           <h2 className={styles.title}>Настройки</h2>
-          <button className={styles.closeBtn} onClick={onClose}>✕</button>
+          <button className={styles.closeBtn} onClick={onClose}>
+            ✕
+          </button>
         </div>
-        
+
         <div className={styles.field}>
           <label className={styles.label}>Модель</label>
           <select
@@ -71,29 +82,13 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
         </div>
 
         <div className={styles.field}>
-          <label className={styles.label}>
-            Temperature: {temperature.toFixed(1)}
-          </label>
-          <Slider
-            min={0}
-            max={2}
-            step={0.1}
-            value={temperature}
-            onChange={setTemperature}
-          />
+          <label className={styles.label}>Temperature: {temperature.toFixed(1)}</label>
+          <Slider min={0} max={2} step={0.1} value={temperature} onChange={setTemperature} />
         </div>
 
         <div className={styles.field}>
-          <label className={styles.label}>
-            Top-P: {topP.toFixed(2)}
-          </label>
-          <Slider
-            min={0}
-            max={1}
-            step={0.05}
-            value={topP}
-            onChange={setTopP}
-          />
+          <label className={styles.label}>Top-P: {topP.toFixed(2)}</label>
+          <Slider min={0} max={1} step={0.05} value={topP} onChange={setTopP} />
         </div>
 
         <div className={styles.field}>
@@ -119,11 +114,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
         </div>
 
         <div className={styles.field}>
-          <Toggle
-            checked={darkTheme}
-            onChange={setDarkTheme}
-            label="Тёмная тема"
-          />
+          <Toggle checked={darkTheme} onChange={handleThemeToggle} label="Тёмная тема" />
         </div>
 
         <div className={styles.actions}>

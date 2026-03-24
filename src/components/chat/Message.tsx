@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import styles from './Message.module.css';
 
@@ -12,21 +12,36 @@ const formatTime = (ts: number) =>
   new Date(ts).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
 
 const Message: React.FC<MessageProps> = ({ variant, content, timestamp }) => {
-  const [showCopy, setShowCopy] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
+  const copyTimeoutRef = useRef<number | null>(null);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(content);
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current !== null) {
+        window.clearTimeout(copyTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(content);
+      setIsCopied(true);
+      if (copyTimeoutRef.current !== null) {
+        window.clearTimeout(copyTimeoutRef.current);
+      }
+      copyTimeoutRef.current = window.setTimeout(() => {
+        setIsCopied(false);
+        copyTimeoutRef.current = null;
+      }, 2000);
+    } catch {
+      setIsCopied(false);
+    }
   };
 
   return (
-    <div
-      className={`${styles.message} ${styles[variant]}`}
-      onMouseEnter={() => setShowCopy(true)}
-      onMouseLeave={() => setShowCopy(false)}
-    >
-      {variant === 'assistant' && (
-        <div className={styles.avatar}>🤖</div>
-      )}
+    <div className={`${styles.message} ${styles[variant]}`}>
+      {variant === 'assistant' && <div className={styles.avatar}>🤖</div>}
       <div className={styles.bubble}>
         <div className={styles.header}>
           <span className={styles.name}>
@@ -35,9 +50,14 @@ const Message: React.FC<MessageProps> = ({ variant, content, timestamp }) => {
               <span className={styles.time}> · {formatTime(timestamp)}</span>
             )}
           </span>
-          {showCopy && (
-            <button type="button" className={styles.copyBtn} onClick={handleCopy}>
-              📋
+          {variant === 'assistant' && (
+            <button
+              type="button"
+              className={`${styles.copyBtn} ${isCopied ? styles.copyBtnCopied : ''}`}
+              onClick={handleCopy}
+              aria-label="Копировать сообщение"
+            >
+              {isCopied ? 'Скопировано' : 'Копировать'}
             </button>
           )}
         </div>

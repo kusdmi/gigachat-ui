@@ -8,11 +8,7 @@ const App: React.FC = () => {
   const [isDarkTheme, setIsDarkTheme] = useState(false);
 
   useEffect(() => {
-    if (isDarkTheme) {
-      document.body.classList.add('dark');
-    } else {
-      document.body.classList.remove('dark');
-    }
+    document.documentElement.setAttribute('data-theme', isDarkTheme ? 'dark' : 'light');
   }, [isDarkTheme]);
 
   const handleLoginSuccess = () => {
@@ -24,10 +20,7 @@ const App: React.FC = () => {
       {!isAuthenticated ? (
         <AuthForm onSuccess={handleLoginSuccess} />
       ) : (
-        <MainApp 
-          onThemeChange={setIsDarkTheme} 
-          initialTheme={isDarkTheme} 
-        />
+        <MainApp onThemeChange={setIsDarkTheme} initialTheme={isDarkTheme} />
       )}
     </>
   );

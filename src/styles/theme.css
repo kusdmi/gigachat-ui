@@ -2,7 +2,9 @@
   box-sizing: border-box;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -10,7 +12,8 @@ html, body, #root {
   overflow-x: hidden;
 }
 
-:root {
+:root,
+html[data-theme='light'] {
   --color-bg: #ffffff;
   --color-surface: #f3f4f6;
   --color-text: #1f2937;
@@ -26,7 +29,7 @@ html, body, #root {
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
 }
 
-.dark {
+html[data-theme='dark'] {
   --color-bg: #111827;
   --color-surface: #1f2937;
   --color-text: #f9fafb;
