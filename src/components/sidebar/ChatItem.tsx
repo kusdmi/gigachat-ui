@@ -2,12 +2,11 @@ import React, { useState } from 'react';
 import styles from './ChatItem.module.css';
 
 interface ChatItemProps {
-  id: string;
   title: string;
   lastMessageDate: string;
   isActive: boolean;
-  onEdit?: () => void;
-  onDelete?: () => void;
+  onEdit?: (e: React.MouseEvent) => void;
+  onDelete?: (e: React.MouseEvent) => void;
   onClick?: () => void;
 }
 
@@ -17,7 +16,7 @@ const ChatItem: React.FC<ChatItemProps> = ({
   isActive,
   onEdit,
   onDelete,
-  onClick
+  onClick,
 }) => {
   const [showActions, setShowActions] = useState(false);
 
@@ -27,6 +26,14 @@ const ChatItem: React.FC<ChatItemProps> = ({
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
       onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick?.();
+        }
+      }}
+      role="button"
+      tabIndex={0}
     >
       <div className={styles.content}>
         <div className={styles.title}>{title}</div>
@@ -34,8 +41,22 @@ const ChatItem: React.FC<ChatItemProps> = ({
       </div>
       {showActions && (
         <div className={styles.actions}>
-          <button onClick={onEdit} className={styles.editBtn}>✎</button>
-          <button onClick={onDelete} className={styles.deleteBtn}>🗑</button>
+          <button
+            type="button"
+            onClick={onEdit}
+            className={styles.editBtn}
+            aria-label="Переименовать"
+          >
+            ✎
+          </button>
+          <button
+            type="button"
+            onClick={onDelete}
+            className={styles.deleteBtn}
+            aria-label="Удалить"
+          >
+            🗑
+          </button>
         </div>
       )}
     </div>

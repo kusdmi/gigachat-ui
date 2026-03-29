@@ -1,75 +1,42 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import MessageList from './MessageList';
 import InputArea from './InputArea';
 import Button from '../ui/Button';
 import styles from './ChatWindow.module.css';
-import type { Message } from '../../types/message';
+import { useChatStore } from '../../store/useChatStore';
 
 interface ChatWindowProps {
   onOpenSettings?: () => void;
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({ onOpenSettings }) => {
-  const [messages, setMessages] = React.useState<Message[]>([]);
-  const [isLoading, setIsLoading] = React.useState(false);
+  const messages = useChatStore((s) => {
+    const id = s.activeChatId;
+    if (!id) return [];
+    return s.chats.find((c) => c.id === id)?.messages ?? [];
+  });
+  const isLoading = useChatStore((s) => {
+    const id = s.activeChatId;
+    return id !== null && s.loadingChatId === id;
+  });
+  const activeTitle = useChatStore((s) => {
+    const id = s.activeChatId;
+    if (!id) return 'Чат';
+    return s.chats.find((c) => c.id === id)?.title ?? 'Чат';
+  });
+  const sendMessage = useChatStore((s) => s.sendMessage);
+  const stopGeneration = useChatStore((s) => s.stopGeneration);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const replyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const awaitingAssistantRef = useRef(false);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  useEffect(() => {
-    return () => {
-      if (replyTimeoutRef.current !== null) {
-        clearTimeout(replyTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  const handleSend = useCallback((content: string) => {
-    const trimmed = content.trim();
-    if (!trimmed || awaitingAssistantRef.current) return;
-    awaitingAssistantRef.current = true;
-
-    const userMessage: Message = {
-      id: crypto.randomUUID(),
-      role: 'user',
-      content: trimmed,
-      timestamp: Date.now(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-    setIsLoading(true);
-
-    if (replyTimeoutRef.current !== null) {
-      clearTimeout(replyTimeoutRef.current);
-    }
-
-    const delayMs = 1000 + Math.random() * 1000;
-    replyTimeoutRef.current = window.setTimeout(() => {
-      replyTimeoutRef.current = null;
-      const assistantMessage: Message = {
-        id: crypto.randomUUID(),
-        role: 'assistant',
-        content:
-          'Это демо-ответ. Вы написали: «' +
-          trimmed +
-          '». В реальном приложении здесь был бы ответ модели.',
-        timestamp: Date.now(),
-      };
-      setMessages((prev) => [...prev, assistantMessage]);
-      setIsLoading(false);
-      awaitingAssistantRef.current = false;
-    }, delayMs);
-  }, []);
-
   return (
     <div className={styles.window}>
       <div className={styles.header}>
-        <h2 className={styles.title}>Текущий чат: Обсуждение проекта</h2>
-        {/* Кнопка настроек видна только на десктопе */}
+        <h2 className={styles.title}>{activeTitle}</h2>
         {onOpenSettings && (
           <Button
             variant="secondary"
@@ -86,7 +53,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onOpenSettings }) => {
         isLoading={isLoading}
         messagesEndRef={messagesEndRef}
       />
-      <InputArea onSend={handleSend} isLoading={isLoading} />
+      <InputArea
+        onSend={sendMessage}
+        onStop={stopGeneration}
+        isLoading={isLoading}
+      />
     </div>
   );
 };

@@ -4,10 +4,11 @@ import styles from './InputArea.module.css';
 
 interface InputAreaProps {
   onSend: (text: string) => void;
+  onStop?: () => void;
   isLoading: boolean;
 }
 
-const InputArea: React.FC<InputAreaProps> = ({ onSend, isLoading }) => {
+const InputArea: React.FC<InputAreaProps> = ({ onSend, onStop, isLoading }) => {
   const [input, setInput] = useState('');
 
   const handleSend = () => {
@@ -39,7 +40,13 @@ const InputArea: React.FC<InputAreaProps> = ({ onSend, isLoading }) => {
       />
       <div className={styles.actions}>
         {isLoading ? (
-          <Button type="button" variant="secondary" size="sm" className={styles.actionButton}>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className={styles.actionButton}
+            onClick={() => onStop?.()}
+          >
             Стоп
           </Button>
         ) : (

@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeHighlight from 'rehype-highlight';
 import styles from './Message.module.css';
+import 'highlight.js/styles/github.css';
 
 interface MessageProps {
   variant: 'user' | 'assistant';
@@ -62,7 +65,16 @@ const Message: React.FC<MessageProps> = ({ variant, content, timestamp }) => {
           )}
         </div>
         <div className={styles.text}>
-          <ReactMarkdown>{content}</ReactMarkdown>
+          {variant === 'assistant' ? (
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              rehypePlugins={[rehypeHighlight]}
+            >
+              {content}
+            </ReactMarkdown>
+          ) : (
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+          )}
         </div>
       </div>
     </div>

@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Button from '../ui/Button';
 import Toggle from '../ui/Toggle';
 import Slider from '../ui/Slider';
 import styles from './SettingsPanel.module.css';
+import { useChatStore } from '../../store/useChatStore';
 
 interface SettingsPanelProps {
   isOpen: boolean;
@@ -17,42 +18,13 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
   onThemeChange,
   initialTheme,
 }) => {
-  const [model, setModel] = useState('GigaChat');
-  const [temperature, setTemperature] = useState(0.7);
-  const [topP, setTopP] = useState(0.9);
-  const [maxTokens, setMaxTokens] = useState(2048);
-  const [systemPrompt, setSystemPrompt] = useState('Ты полезный ассистент.');
-  const [darkTheme, setDarkTheme] = useState(initialTheme);
-
-  useEffect(() => {
-    setDarkTheme(initialTheme);
-  }, [initialTheme]);
-
-  const handleSave = () => {
-    console.log({
-      model,
-      temperature,
-      topP,
-      maxTokens,
-      systemPrompt,
-      darkTheme,
-    });
-    onClose();
-  };
+  const settings = useChatStore((s) => s.settings);
+  const updateSettings = useChatStore((s) => s.updateSettings);
+  const resetSettings = useChatStore((s) => s.resetSettings);
 
   const handleReset = () => {
-    setModel('GigaChat');
-    setTemperature(0.7);
-    setTopP(0.9);
-    setMaxTokens(2048);
-    setSystemPrompt('Ты полезный ассистент.');
-    setDarkTheme(false);
+    resetSettings();
     onThemeChange(false);
-  };
-
-  const handleThemeToggle = (isDark: boolean) => {
-    setDarkTheme(isDark);
-    onThemeChange(isDark);
   };
 
   if (!isOpen) return null;
@@ -62,7 +34,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
       <div className={styles.drawer} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
           <h2 className={styles.title}>Настройки</h2>
-          <button className={styles.closeBtn} onClick={onClose}>
+          <button type="button" className={styles.closeBtn} onClick={onClose}>
             ✕
           </button>
         </div>
@@ -70,8 +42,8 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
         <div className={styles.field}>
           <label className={styles.label}>Модель</label>
           <select
-            value={model}
-            onChange={(e) => setModel(e.target.value)}
+            value={settings.model}
+            onChange={(e) => updateSettings({ model: e.target.value })}
             className={styles.select}
           >
             <option>GigaChat</option>
@@ -82,21 +54,35 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
         </div>
 
         <div className={styles.field}>
-          <label className={styles.label}>Temperature: {temperature.toFixed(1)}</label>
-          <Slider min={0} max={2} step={0.1} value={temperature} onChange={setTemperature} />
+          <label className={styles.label}>
+            Temperature: {settings.temperature.toFixed(1)}
+          </label>
+          <Slider
+            min={0}
+            max={2}
+            step={0.1}
+            value={settings.temperature}
+            onChange={(v) => updateSettings({ temperature: v })}
+          />
         </div>
 
         <div className={styles.field}>
-          <label className={styles.label}>Top-P: {topP.toFixed(2)}</label>
-          <Slider min={0} max={1} step={0.05} value={topP} onChange={setTopP} />
+          <label className={styles.label}>Top-P: {settings.topP.toFixed(2)}</label>
+          <Slider
+            min={0}
+            max={1}
+            step={0.05}
+            value={settings.topP}
+            onChange={(v) => updateSettings({ topP: v })}
+          />
         </div>
 
         <div className={styles.field}>
           <label className={styles.label}>Max Tokens</label>
           <input
             type="number"
-            value={maxTokens}
-            onChange={(e) => setMaxTokens(Number(e.target.value))}
+            value={settings.maxTokens}
+            onChange={(e) => updateSettings({ maxTokens: Number(e.target.value) })}
             min={1}
             max={4096}
             className={styles.input}
@@ -107,19 +93,23 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
           <label className={styles.label}>System Prompt</label>
           <textarea
             rows={3}
-            value={systemPrompt}
-            onChange={(e) => setSystemPrompt(e.target.value)}
+            value={settings.systemPrompt}
+            onChange={(e) => updateSettings({ systemPrompt: e.target.value })}
             className={styles.textarea}
           />
         </div>
 
         <div className={styles.field}>
-          <Toggle checked={darkTheme} onChange={handleThemeToggle} label="Тёмная тема" />
+          <Toggle
+            checked={initialTheme}
+            onChange={onThemeChange}
+            label="Тёмная тема"
+          />
         </div>
 
         <div className={styles.actions}>
-          <Button variant="primary" onClick={handleSave}>
-            Сохранить
+          <Button variant="primary" onClick={onClose}>
+            Готово
           </Button>
           <Button variant="secondary" onClick={handleReset}>
             Сбросить
