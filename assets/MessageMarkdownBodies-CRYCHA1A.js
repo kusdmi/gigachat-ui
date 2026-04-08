@@ -1,0 +1,1 @@
+import{j as s}from"./react-vendor-DoyxvGH4.js";import{M as e,r as n,a}from"./markdown-highlight-B1g0sWDc.js";function o({variant:i,content:r}){return i==="assistant"?s.jsx(e,{remarkPlugins:[a],rehypePlugins:[n],children:r}):s.jsx(e,{remarkPlugins:[a],children:r})}export{o as MessageMarkdownBodies,o as default};
