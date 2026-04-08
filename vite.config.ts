@@ -71,4 +71,21 @@ export default defineConfig({
       },
     },
   },
+  /** Как dev: прокси к API Сбера, иначе `npm run preview` даёт CORS / Failed to fetch. */
+  preview: {
+    proxy: {
+      '/gigachat-api': {
+        target: 'https://gigachat.devices.sberbank.ru',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/gigachat-api/, ''),
+      },
+      '/gigachat-oauth': {
+        target: 'https://ngw.devices.sberbank.ru:9443',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/gigachat-oauth/, ''),
+      },
+    },
+  },
 });

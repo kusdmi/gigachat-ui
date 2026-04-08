@@ -36,17 +36,58 @@ const PROD_OAUTH_URL = 'https://ngw.devices.sberbank.ru:9443/api/v2/oauth';
 const PROD_CHAT_URL =
   'https://gigachat.devices.sberbank.ru/api/v1/chat/completions';
 
+/** Учитывает `base` (GitHub Pages: `/repo/`): пути `/gigachat-*` должны быть под тем же префиксом. */
+function withAppBase(path: string): string {
+  const base = import.meta.env.BASE_URL;
+  const normalized = base.endsWith('/') ? base.slice(0, -1) : base;
+  const p = path.startsWith('/') ? path : `/${path}`;
+  return `${normalized}${p}`;
+}
+
+/** Тот же origin, что и у SPA: запросы идут на прокси Vite / Vercel `api/*`, а не напрямую на Сбер (иначе CORS → «Failed to fetch»). */
+function sameOriginProxyEnabled(): boolean {
+  return import.meta.env.VITE_GIGACHAT_USE_RELATIVE_PROXY === 'true';
+}
+
+async function fetchOrNetworkHint(
+  input: RequestInfo | URL,
+  init?: RequestInit,
+): Promise<Response> {
+  try {
+    return await fetch(input, init);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    if (
+      msg.includes('Failed to fetch') ||
+      msg.includes('Load failed') ||
+      msg.includes('NetworkError') ||
+      msg.includes('network error')
+    ) {
+      throw new Error(
+        'Не удалось выполнить запрос к GigaChat (часто блокировка CORS в браузере при прямом обращении к серверам Сбера). ' +
+          'Соберите с VITE_GIGACHAT_USE_RELATIVE_PROXY=true и задеплойте на хостинг с прокси (например Vercel — каталог api/), ' +
+          'либо задайте VITE_GIGACHAT_OAUTH_URL и VITE_GIGACHAT_CHAT_URL на URL своего backend-прокси. Статический GitHub Pages без прокси к API не подходит.',
+      );
+    }
+    throw e;
+  }
+}
+
 function oauthUrl(): string {
   const fromEnv = import.meta.env.VITE_GIGACHAT_OAUTH_URL?.trim();
   if (fromEnv) return fromEnv;
-  if (import.meta.env.DEV) return '/gigachat-oauth/api/v2/oauth';
+  if (import.meta.env.DEV || sameOriginProxyEnabled()) {
+    return withAppBase('/gigachat-oauth/api/v2/oauth');
+  }
   return PROD_OAUTH_URL;
 }
 
 function chatUrl(): string {
   const fromEnv = import.meta.env.VITE_GIGACHAT_CHAT_URL?.trim();
   if (fromEnv) return fromEnv;
-  if (import.meta.env.DEV) return '/gigachat-api/api/v1/chat/completions';
+  if (import.meta.env.DEV || sameOriginProxyEnabled()) {
+    return withAppBase('/gigachat-api/api/v1/chat/completions');
+  }
   return PROD_CHAT_URL;
 }
 
@@ -68,7 +109,7 @@ export async function getAccessToken(signal?: AbortSignal): Promise<string> {
   const scope = import.meta.env.VITE_GIGACHAT_SCOPE?.trim() || 'GIGACHAT_API_PERS';
   const rqUid = crypto.randomUUID();
 
-  const res = await fetch(oauthUrl(), {
+  const res = await fetchOrNetworkHint(oauthUrl(), {
     method: 'POST',
     signal,
     headers: {
@@ -111,7 +152,7 @@ export async function chatCompletion(params: ChatCompletionParams): Promise<Chat
   if (params.top_p !== undefined) body.top_p = params.top_p;
   if (params.max_tokens !== undefined) body.max_tokens = params.max_tokens;
 
-  const res = await fetch(chatUrl(), {
+  const res = await fetchOrNetworkHint(chatUrl(), {
     method: 'POST',
     signal: params.signal,
     headers: {
