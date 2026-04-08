@@ -22,6 +22,14 @@ export interface ChatCompletionResult {
 
 let tokenCache: { token: string; expiresAtMs: number } | null = null;
 
+function normalizeAuthKey(raw: string | undefined): string {
+  let key = raw?.trim() ?? '';
+  if (key.toLowerCase().startsWith('basic ')) {
+    key = key.slice(6).trim();
+  }
+  return key;
+}
+
 function oauthUrl(): string {
   return (
     import.meta.env.VITE_GIGACHAT_OAUTH_URL ?? '/gigachat-oauth/api/v2/oauth'
@@ -36,11 +44,11 @@ function chatUrl(): string {
 }
 
 export function hasGigaChatCredentials(): boolean {
-  return Boolean(import.meta.env.VITE_GIGACHAT_AUTH_KEY?.trim());
+  return Boolean(normalizeAuthKey(import.meta.env.VITE_GIGACHAT_AUTH_KEY));
 }
 
 export async function getAccessToken(signal?: AbortSignal): Promise<string> {
-  const authKey = import.meta.env.VITE_GIGACHAT_AUTH_KEY?.trim();
+  const authKey = normalizeAuthKey(import.meta.env.VITE_GIGACHAT_AUTH_KEY);
   if (!authKey) {
     throw new Error('Не задан VITE_GIGACHAT_AUTH_KEY в .env');
   }

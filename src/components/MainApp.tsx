@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Sidebar from './sidebar/Sidebar';
 import ChatWindow from './chat/ChatWindow';
 import SettingsPanel from './settings/SettingsPanel';
 import Button from './ui/Button';
 import styles from './MainApp.module.css';
+import { ensureChatExists } from '../store/useChatStore';
 
 interface MainAppProps {
   onThemeChange: (isDark: boolean) => void;
@@ -16,11 +17,15 @@ const MainApp: React.FC<MainAppProps> = ({ onThemeChange, initialTheme }) => {
 
   const closeSidebar = () => setIsSidebarOpen(false);
 
+  useEffect(() => {
+    ensureChatExists();
+  }, []);
+
   return (
     <div className={styles.app}>
-      {/* Верхняя панель с кнопками (видна только на мобильных) */}
       <div className={styles.topBar}>
         <button
+          type="button"
           className={styles.burger}
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
         >
@@ -36,10 +41,9 @@ const MainApp: React.FC<MainAppProps> = ({ onThemeChange, initialTheme }) => {
         </Button>
       </div>
 
-      {/* Оверлей для мобильной боковой панели */}
       {isSidebarOpen && <div className={styles.overlay} onClick={closeSidebar} />}
 
-      <Sidebar isOpen={isSidebarOpen} />
+      <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
 
       <div className={styles.main}>
         <ChatWindow onOpenSettings={() => setIsSettingsOpen(true)} />

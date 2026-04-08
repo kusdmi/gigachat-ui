@@ -52,7 +52,9 @@ const ChatList: React.FC<ChatListProps> = ({ onClose }) => {
           }}
           onDelete={(e) => {
             e.stopPropagation();
-            deleteChat(chat.id);
+            if (window.confirm('Удалить этот чат?')) {
+              deleteChat(chat.id);
+            }
           }}
         />
       ))}

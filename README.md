@@ -1,5 +1,23 @@
 # React + TypeScript + Vite
 
+## Тесты
+
+Запуск: `npm test` (однократный прогон) или `npm run test:watch` (режим наблюдения).
+
+Используются **Vitest** (окружение `jsdom`), **React Testing Library** и **@testing-library/jest-dom**. Реальные запросы к GigaChat API в тестах не выполняются — модуль `src/api/gigachat.ts` мокируется в `useChatStore.test.ts`.
+
+Что покрыто:
+
+| Область | Файл |
+|--------|------|
+| Логика стора (аналог ADD_MESSAGE / CREATE_CHAT / DELETE_CHAT / RENAME_CHAT) | `src/store/useChatStore.test.ts` |
+| `InputArea`: отправка по кнопке и Enter, disabled при пустом вводе | `src/components/chat/InputArea.test.tsx` |
+| `Message`: варианты user / assistant, кнопка «Копировать» у ассистента | `src/components/chat/Message.test.tsx` |
+| `Sidebar`: поиск, удаление с `confirm` | `src/components/sidebar/Sidebar.test.tsx` |
+| `safeJsonParse`, безопасный `localStorage` для persist | `src/utils/storage.test.ts` |
+
+---
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:

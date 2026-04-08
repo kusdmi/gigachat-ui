@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { chatCompletion, hasGigaChatCredentials } from '../api/gigachat';
+import { createSafeJsonLocalStorage } from '../utils/storage';
 import type { Message } from '../types/message';
 import type { AppSettings, ChatSession } from '../types/chat';
 
@@ -217,7 +218,7 @@ export const useChatStore = create<ChatStore>()(
     }),
     {
       name: 'gigachat-ui-storage',
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => createSafeJsonLocalStorage()),
       partialize: (s) => ({
         chats: s.chats,
         activeChatId: s.activeChatId,
