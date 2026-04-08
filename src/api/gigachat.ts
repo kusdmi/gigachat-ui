@@ -30,17 +30,23 @@ function normalizeAuthKey(raw: string | undefined): string {
   return key;
 }
 
+/** Прямые URL хостов Сбера — нужны в продакшене (GitHub Pages и т.д.), где нет dev-прокси Vite. */
+const PROD_OAUTH_URL = 'https://ngw.devices.sberbank.ru:9443/api/v2/oauth';
+const PROD_CHAT_URL =
+  'https://gigachat.devices.sberbank.ru/api/v1/chat/completions';
+
 function oauthUrl(): string {
-  return (
-    import.meta.env.VITE_GIGACHAT_OAUTH_URL ?? '/gigachat-oauth/api/v2/oauth'
-  );
+  const fromEnv = import.meta.env.VITE_GIGACHAT_OAUTH_URL?.trim();
+  if (fromEnv) return fromEnv;
+  if (import.meta.env.DEV) return '/gigachat-oauth/api/v2/oauth';
+  return PROD_OAUTH_URL;
 }
 
 function chatUrl(): string {
-  return (
-    import.meta.env.VITE_GIGACHAT_CHAT_URL ??
-    '/gigachat-api/api/v1/chat/completions'
-  );
+  const fromEnv = import.meta.env.VITE_GIGACHAT_CHAT_URL?.trim();
+  if (fromEnv) return fromEnv;
+  if (import.meta.env.DEV) return '/gigachat-api/api/v1/chat/completions';
+  return PROD_CHAT_URL;
 }
 
 export function hasGigaChatCredentials(): boolean {

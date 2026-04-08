@@ -109,21 +109,10 @@ npm run build:analyze
 - **`/chat/:chatId`** — основной интерфейс чата.
 - Неизвестные пути перенаправляются на **`/`** (далее — на актуальный чат).
 
-**Vercel:** [`vercel.json`](vercel.json) — все запросы на `index.html`.  
-**Netlify:** [`public/_redirects`](public/_redirects).
+**Vercel:** `vercel.json` — все запросы на `index.html`.  
+**Netlify:** `public/_redirects`.
 
-### GitHub Pages (простой вариант)
-
-1. Один раз установить плагин: `npm install` (в проекте уже есть зависимость `gh-pages`).
-2. В команде ниже замените **`ИМЯ-РЕПО`** на имя репозитория на GitHub (как в URL `github.com/вы/ИМЯ-РЕПО`).
-3. Выполнить из корня проекта:
-   ```bash
-   GITHUB_PAGES_BASE=/ИМЯ-РЕПО/ npm run deploy:github
-   ```
-4. На GitHub: **Settings → Pages** → источник: ветка **`gh-pages`**, папка **`/ (root)`** (ветка создаётся командой выше).
-5. Сайт откроется по адресу **`https://ВАШ-ЛОГИН.github.io/ИМЯ-РЕПО/`** (через минуту после деплоя).
-
-Без `GITHUB_PAGES_BASE` сборка идёт под корень `/` — так удобно для Vercel/Netlify, для GitHub Pages путь обязателен.
+**GitHub Pages:** собирайте с `GITHUB_PAGES_BASE=/имя-репо/` и `npm run deploy:github` (см. `package.json`). Если в консоли **404** на запросы к `/gigachat-oauth` или `/gigachat-api` — это ожидаемо на gh.io: в **production** клиент ходит на хосты Сбера напрямую (см. `src/api/gigachat.ts`). Если **404** у JS/CSS — пересоберите с правильным `GITHUB_PAGES_BASE` под имя репозитория.
 
 ---
 
