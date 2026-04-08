@@ -1,17 +1,55 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { visualizer } from 'rollup-plugin-visualizer';
+
+const analyze = process.env.ANALYZE === '1' || process.env.ANALYZE === 'true';
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    analyze
+      ? visualizer({
+          filename: 'dist/stats.html',
+          gzipSize: true,
+          open: false,
+        })
+      : null,
+  ].filter(Boolean),
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return;
+          if (
+            id.includes('react-markdown') ||
+            id.includes('remark') ||
+            id.includes('rehype') ||
+            id.includes('highlight.js') ||
+            id.includes('mdast') ||
+            id.includes('micromark') ||
+            id.includes('unist') ||
+            id.includes('hast') ||
+            id.includes('property-information')
+          ) {
+            return 'markdown-highlight';
+          }
+          if (id.includes('react-dom') || id.includes('/react/')) {
+            return 'react-vendor';
+          }
+          if (id.includes('zustand')) {
+            return 'zustand';
+          }
+        },
+      },
+    },
+  },
   server: {
     proxy: {
       '/gigachat-api': {
         target: 'https://gigachat.devices.sberbank.ru',
         changeOrigin: true,
-        // В dev при ошибке «self-signed certificate in certificate chain» (корп. прокси / цепочка TLS)
         secure: false,
-        // Иначе запрос уйдёт на .../gigachat-api/api/v1/... → 404
         rewrite: (path) => path.replace(/^\/gigachat-api/, ''),
       },
       '/gigachat-oauth': {

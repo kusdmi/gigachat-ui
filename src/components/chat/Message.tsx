@@ -1,9 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import rehypeHighlight from 'rehype-highlight';
+import React, { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import styles from './Message.module.css';
-import 'highlight.js/styles/github.css';
+
+const MessageMarkdownBodies = lazy(() => import('./MessageMarkdownBodies'));
 
 interface MessageProps {
   variant: 'user' | 'assistant';
@@ -65,16 +63,9 @@ const Message: React.FC<MessageProps> = ({ variant, content, timestamp }) => {
           )}
         </div>
         <div className={styles.text}>
-          {variant === 'assistant' ? (
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              rehypePlugins={[rehypeHighlight]}
-            >
-              {content}
-            </ReactMarkdown>
-          ) : (
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
-          )}
+          <Suspense fallback={<span className={styles.markdownFallback}>Загрузка форматирования…</span>}>
+            <MessageMarkdownBodies variant={variant} content={content} />
+          </Suspense>
         </div>
       </div>
     </div>

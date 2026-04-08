@@ -1,35 +1,57 @@
-import React, { useState } from 'react';
+import React, { memo, useCallback, useState } from 'react';
 import styles from './ChatItem.module.css';
 
-interface ChatItemProps {
+export interface ChatItemProps {
+  chatId: string;
   title: string;
   lastMessageDate: string;
   isActive: boolean;
-  onEdit?: (e: React.MouseEvent) => void;
-  onDelete?: (e: React.MouseEvent) => void;
-  onClick?: () => void;
+  onSelect: (id: string) => void;
+  onRename: (id: string, currentTitle: string) => void;
+  onDelete: (id: string) => void;
 }
 
-const ChatItem: React.FC<ChatItemProps> = ({
+function ChatItemInner({
+  chatId,
   title,
   lastMessageDate,
   isActive,
-  onEdit,
+  onSelect,
+  onRename,
   onDelete,
-  onClick,
-}) => {
+}: ChatItemProps) {
   const [showActions, setShowActions] = useState(false);
+
+  const handleClick = useCallback(() => {
+    onSelect(chatId);
+  }, [onSelect, chatId]);
+
+  const handleEdit = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onRename(chatId, title);
+    },
+    [onRename, chatId, title]
+  );
+
+  const handleDeleteClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onDelete(chatId);
+    },
+    [onDelete, chatId]
+  );
 
   return (
     <div
       className={`${styles.item} ${isActive ? styles.active : ''}`}
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
-      onClick={onClick}
+      onClick={handleClick}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          onClick?.();
+          handleClick();
         }
       }}
       role="button"
@@ -43,7 +65,7 @@ const ChatItem: React.FC<ChatItemProps> = ({
         <div className={styles.actions}>
           <button
             type="button"
-            onClick={onEdit}
+            onClick={handleEdit}
             className={styles.editBtn}
             aria-label="Переименовать"
           >
@@ -51,7 +73,7 @@ const ChatItem: React.FC<ChatItemProps> = ({
           </button>
           <button
             type="button"
-            onClick={onDelete}
+            onClick={handleDeleteClick}
             className={styles.deleteBtn}
             aria-label="Удалить"
           >
@@ -61,6 +83,7 @@ const ChatItem: React.FC<ChatItemProps> = ({
       )}
     </div>
   );
-};
+}
 
+const ChatItem = memo(ChatItemInner);
 export default ChatItem;

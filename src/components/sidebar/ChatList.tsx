@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ChatItem from './ChatItem';
 import styles from './ChatList.module.css';
 import { useChatStore } from '../../store/useChatStore';
@@ -16,6 +17,7 @@ interface ChatListProps {
 }
 
 const ChatList: React.FC<ChatListProps> = ({ onClose }) => {
+  const navigate = useNavigate();
   const chats = useChatStore((s) => s.chats);
   const searchQuery = useChatStore((s) => s.searchQuery);
   const activeChatId = useChatStore((s) => s.activeChatId);
@@ -29,33 +31,44 @@ const ChatList: React.FC<ChatListProps> = ({ onClose }) => {
     return chats.filter((c) => c.title.toLowerCase().includes(q));
   }, [chats, searchQuery]);
 
-  const handleEdit = (id: string, currentTitle: string) => {
-    const next = window.prompt('Название чата', currentTitle);
-    if (next && next.trim()) renameChat(id, next.trim());
-  };
+  const onSelect = useCallback(
+    (id: string) => {
+      selectChat(id);
+      navigate(`/chat/${id}`);
+      onClose?.();
+    },
+    [selectChat, navigate, onClose]
+  );
+
+  const onRename = useCallback(
+    (id: string, currentTitle: string) => {
+      const next = window.prompt('Название чата', currentTitle);
+      if (next && next.trim()) renameChat(id, next.trim());
+    },
+    [renameChat]
+  );
+
+  const onDelete = useCallback(
+    (id: string) => {
+      if (window.confirm('Удалить этот чат?')) {
+        deleteChat(id);
+      }
+    },
+    [deleteChat]
+  );
 
   return (
     <div className={styles.list}>
       {filtered.map((chat) => (
         <ChatItem
           key={chat.id}
+          chatId={chat.id}
           title={chat.title}
           lastMessageDate={formatDate(chat.updatedAt)}
           isActive={activeChatId === chat.id}
-          onClick={() => {
-            selectChat(chat.id);
-            onClose?.();
-          }}
-          onEdit={(e) => {
-            e.stopPropagation();
-            handleEdit(chat.id, chat.title);
-          }}
-          onDelete={(e) => {
-            e.stopPropagation();
-            if (window.confirm('Удалить этот чат?')) {
-              deleteChat(chat.id);
-            }
-          }}
+          onSelect={onSelect}
+          onRename={onRename}
+          onDelete={onDelete}
         />
       ))}
     </div>

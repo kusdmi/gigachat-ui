@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { useChatStore, defaultAppSettings } from '../../store/useChatStore';
 
@@ -27,8 +28,17 @@ function seedChats() {
     searchQuery: '',
     loadingChatId: null,
     abortController: null,
+    sendError: null,
   });
   localStorage.clear();
+}
+
+function renderSidebar() {
+  return render(
+    <MemoryRouter initialEntries={['/chat/chat-alpha']}>
+      <Sidebar isOpen />
+    </MemoryRouter>
+  );
 }
 
 describe('Sidebar / поиск / удаление', () => {
@@ -40,6 +50,7 @@ describe('Sidebar / поиск / удаление', () => {
       searchQuery: '',
       loadingChatId: null,
       abortController: null,
+      sendError: null,
     });
     localStorage.clear();
   });
@@ -52,6 +63,7 @@ describe('Sidebar / поиск / удаление', () => {
       searchQuery: '',
       loadingChatId: null,
       abortController: null,
+      sendError: null,
     });
     localStorage.clear();
     vi.restoreAllMocks();
@@ -60,7 +72,7 @@ describe('Sidebar / поиск / удаление', () => {
   it('поиск фильтрует список по названию', async () => {
     seedChats();
     const user = userEvent.setup();
-    render(<Sidebar isOpen />);
+    renderSidebar();
 
     expect(screen.getByText('Alpha проект')).toBeInTheDocument();
     expect(screen.getByText('Beta идеи')).toBeInTheDocument();
@@ -74,7 +86,7 @@ describe('Sidebar / поиск / удаление', () => {
   it('при пустом поиске отображаются все чаты', async () => {
     seedChats();
     const user = userEvent.setup();
-    render(<Sidebar isOpen />);
+    renderSidebar();
 
     const input = screen.getByPlaceholderText('Поиск чатов...');
     await user.type(input, 'Alpha');
@@ -88,7 +100,7 @@ describe('Sidebar / поиск / удаление', () => {
     seedChats();
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
     const user = userEvent.setup();
-    render(<Sidebar isOpen />);
+    renderSidebar();
 
     const row = screen.getByText('Alpha проект').closest('[role="button"]');
     expect(row).toBeTruthy();

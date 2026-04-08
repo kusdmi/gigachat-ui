@@ -1,6 +1,8 @@
 .message {
   display: flex;
   margin-bottom: 1.5rem;
+  min-width: 0;
+  max-width: 100%;
   animation: fadeIn 0.3s ease;
 }
 
@@ -33,6 +35,7 @@
 
 .bubble {
   max-width: min(75ch, 78%);
+  min-width: 0;
   padding: 0.75rem 1rem;
   border-radius: 1rem;
   background-color: var(--color-assistant-message);
@@ -96,6 +99,11 @@
   color: var(--color-success);
 }
 
+.markdownFallback {
+  font-size: 0.875rem;
+  opacity: 0.8;
+}
+
 .text {
   word-wrap: break-word;
 }
@@ -112,9 +120,26 @@
   margin: 0.5rem 0 0 0;
   padding: 0.75rem;
   border-radius: 0.5rem;
+  max-width: 100%;
   overflow-x: auto;
   border: 1px solid var(--color-border);
   background-color: var(--color-bg);
+  -webkit-overflow-scrolling: touch;
+}
+
+.text :global(table) {
+  width: 100%;
+  max-width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
+.text :global(img) {
+  max-width: 100%;
+  height: auto;
+  vertical-align: middle;
 }
 
 .text :global(pre code.hljs) {

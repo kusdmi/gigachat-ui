@@ -1,91 +1,163 @@
-# React + TypeScript + Vite
+# GigaChat UI
 
-## Тесты
+## О проекте
 
-Запуск: `npm test` (однократный прогон) или `npm run test:watch` (режим наблюдения).
+**GigaChat UI** — одностраничное веб-приложение чата на **React** и **TypeScript**, которое подключается к **GigaChat API** Сбера: сначала выполняется **OAuth** (получение access token), затем запросы **chat completions** для диалога с моделью.
 
-Используются **Vitest** (окружение `jsdom`), **React Testing Library** и **@testing-library/jest-dom**. Реальные запросы к GigaChat API в тестах не выполняются — модуль `src/api/gigachat.ts` мокируется в `useChatStore.test.ts`.
+### Возможности
 
-Что покрыто:
+- **Экран входа** — локальная «авторизация» в интерфейсе приложения (до открытия чата).
+- **Несколько чатов** — список сессий в боковой панели, создание, переименование, удаление (с подтверждением), поиск по названию.
+- **Окно переписки** — сообщения пользователя и ассистента, прокрутка к последнему сообщению, индикатор набора при ожидании ответа, остановка генерации.
+- **Форматирование ответов** — Markdown (таблицы, списки и т.д. через `remark-gfm`), подсветка кода в ответах ассистента (`rehype-highlight` + `highlight.js`). Тяжёлые библиотеки вынесены в отдельный JS-чанк и подгружаются лениво, чтобы не раздувать основной бандл.
+- **Настройки** — модель, температура, top-p, лимит токенов, системный промпт, тема оформления. Панель настроек подгружается отдельным чанком и монтируется при открытии.
+- **Маршрутизация** — `React Router`: главная `/` перенаправляет на активный чат; рабочий экран — `/chat/:chatId`. Состояние чатов и настроек сохраняется в **localStorage** через **Zustand** (`persist`).
+- **Устойчивость к ошибкам** — классовый **Error Boundary** вокруг области сообщений (ошибка рендера не ломает весь интерфейс). Ошибки запросов к API показываются под полем ввода с кнопками **«Повторить»** и **«Закрыть»**.
 
-| Область | Файл |
-|--------|------|
-| Логика стора (аналог ADD_MESSAGE / CREATE_CHAT / DELETE_CHAT / RENAME_CHAT) | `src/store/useChatStore.test.ts` |
-| `InputArea`: отправка по кнопке и Enter, disabled при пустом вводе | `src/components/chat/InputArea.test.tsx` |
-| `Message`: варианты user / assistant, кнопка «Копировать» у ассистента | `src/components/chat/Message.test.tsx` |
-| `Sidebar`: поиск, удаление с `confirm` | `src/components/sidebar/Sidebar.test.tsx` |
-| `safeJsonParse`, безопасный `localStorage` для persist | `src/utils/storage.test.ts` |
+### Архитектура (кратко)
+
+- Состояние: **`src/store/useChatStore.ts`** (Zustand).
+- API: **`src/api/gigachat.ts`** — переменные `VITE_GIGACHAT_*` читаются только из `import.meta.env`, секреты не зашиваются в код.
+- В режиме разработки Vite проксирует запросы к хостам GigaChat (см. `vite.config.ts`).
+- Для продакшена настроены SPA-редиректы: **`vercel.json`**, **`public/_redirects`** (Netlify).
 
 ---
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Демо
 
-Currently, two official plugins are available:
+| | |
+|---|---|
+| **Публичное приложение** | _Укажите URL после деплоя (Vercel / Netlify / GitHub Pages)._ |
+| **Наглядные материалы** | Интерактивная карта бандла: [`docs/bundle-stats.html`](docs/bundle-stats.html) (откройте в браузере). При необходимости приложите скриншот теплокарты после `npm run build:analyze` (например, `docs/bundle-screenshot.png`). |
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Имеет смысл проверить работу в **режиме инкогнито** и убедиться, что на хостинге заданы те же переменные окружения, что и локально.
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Стек
 
-## Expanding the ESLint configuration
+| Технология | Версия (актуальные ограничения — в `package.json`) |
+|------------|-----------------------------------------------------|
+| React | ^19.2.0 |
+| TypeScript | ~5.9.3 |
+| Vite | ^7.3.1 |
+| React Router | ^7.14.0 |
+| Zustand | ^5.0.12 |
+| Стили | CSS Modules (`*.module.css`), тема через атрибут `data-theme` на `<html>` |
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Дополнительно: `react-markdown`, `remark-gfm`, `rehype-highlight`, `highlight.js`; Vitest и React Testing Library для тестов.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Запуск локально
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1. Клонировать репозиторий и перейти в каталог проекта:
+   ```bash
+   git clone <url-репозитория>
+   cd gigachat-ui
+   ```
+2. Установить зависимости:
+   ```bash
+   npm install
+   ```
+3. Создать файл **`.env`** по образцу **`.env.example`** и заполнить переменные (секреты не коммитить).
+4. Запустить режим разработки:
+   ```bash
+   npm run dev
+   ```
+5. Открыть в браузере адрес из вывода (часто `http://localhost:5173`).
+
+Полезные команды:
+
+| Команда | Назначение |
+|---------|------------|
+| `npm run build` | Проверка TypeScript и production-сборка |
+| `npm run preview` | Локальный просмотр собранного приложения |
+| `npm run build:analyze` | Сборка с отчётом о размере бандла (`dist/stats.html`) |
+| `npm run lint` | Проверка ESLint |
+
+---
+
+## Переменные окружения
+
+Через Vite в клиент попадают только переменные с префиксом **`VITE_`**. Реальные значения ключей в репозиторий и в README не вставляйте.
+
+| Переменная | Описание |
+|------------|----------|
+| `VITE_GIGACHAT_AUTH_KEY` | Данные для OAuth (как в кабинете разработчика Сбера; при лишнем префиксе `Basic ` клиент может его убрать — см. код API). |
+| `VITE_GIGACHAT_SCOPE` | Область OAuth, например `GIGACHAT_API_PERS`. |
+
+На хостинге задайте те же имена в разделе **Environment Variables** и выполните пересборку.
+
+---
+
+## Аудит бандла
+
+```bash
+npm run build:analyze
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+После сборки откройте **`dist/stats.html`** в браузере (отчёт строится **rollup-plugin-visualizer**). В репозитории лежит копия: [`docs/bundle-stats.html`](docs/bundle-stats.html).
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Стили и код, связанные с Markdown и подсветкой, выделены в отдельные чанки (`markdown-highlight`, ленивая загрузка тела сообщения), чтобы не попадать в минимально возможный основной entry.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
+
+## Маршруты и деплой
+
+- **`/`** — редирект на `/chat/<id активного чата>`.
+- **`/chat/:chatId`** — основной интерфейс чата.
+- Неизвестные пути перенаправляются на **`/`** (далее — на актуальный чат).
+
+**Vercel:** [`vercel.json`](vercel.json) — все запросы на `index.html`.  
+**Netlify:** [`public/_redirects`](public/_redirects).  
+**GitHub Pages:** обычно нужен `base` в конфиге Vite под имя репозитория.
+
+---
+
+## Тесты
+
+Тесты написаны на **Vitest** с окружением **jsdom**, **@testing-library/react** и **@testing-library/user-event**. Реальные HTTP-вызовы к GigaChat в тестах не выполняются: модуль API мокируется там, где нужно (например, в тестах стора).
+
+### Как запустить
+
+| Команда | Описание |
+|---------|----------|
+| **`npm test`** | Однократный прогон всех тестов (`vitest run`) |
+| **`npm run test:watch`** | Режим наблюдения: тесты перезапускаются при изменении файлов |
+
+После правок удобно сначала запустить `npm test` и убедиться, что все сценарии проходят.
+
+### Какие тесты есть (по файлам)
+
+**`src/store/useChatStore.test.ts`** — логика Zustand-стора (мок `gigachat`):
+
+- создание чата с уникальным id и порядок в списке;
+- после `sendMessage` в чате два сообщения (user + assistant), последнее — от ассистента;
+- удаление чата и переключение активного чата при удалении текущего;
+- переименование чата по id.
+
+**`src/components/chat/InputArea.test.tsx`** — поле ввода:
+
+- по кнопке «Отправить» вызывается `onSend` с введённым текстом;
+- по Enter без Shift вызывается `onSend` при непустом поле;
+- кнопка «Отправить» неактивна при пустом поле.
+
+**`src/components/chat/Message.test.tsx`** — карточка сообщения (с `Suspense` из-за ленивого Markdown):
+
+- вариант пользователя: текст и стили;
+- вариант ассистента: заголовок, кнопка копирования, разбор Markdown (например, жирный текст).
+
+**`src/components/sidebar/Sidebar.test.tsx`** — боковая панель (обёртка `MemoryRouter`):
+
+- поиск фильтрует список по названию;
+- после очистки поиска снова видны все чаты;
+- удаление чата с вызовом `window.confirm` и последующим удалением из списка.
+
+**`src/utils/storage.test.ts`** — утилиты для `localStorage` и интеграция с persist Zustand:
+
+- разбор JSON с fallback при ошибках;
+- запись/чтение и очистка битых данных;
+- после изменений стора в `localStorage` попадает ожидаемое состояние.
+
+Итого в проекте **пять файлов тестов**; сценарии перечислены выше по содержанию, а не по внутренним именам в коде — при добавлении новых `it(...)` имеет смысл дополнять этот список в README.

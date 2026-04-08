@@ -1,6 +1,7 @@
 .error {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: flex-start;
   gap: 0.5rem;
   padding: 0.75rem;
   background-color: #fee2e2;
@@ -12,4 +13,17 @@
 
 .icon {
   font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  white-space: pre-wrap;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }

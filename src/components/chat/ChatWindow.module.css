@@ -1,8 +1,11 @@
 .window {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   width: 100%;
+  max-width: 100%;
+  overflow: hidden;
   background-color: var(--color-bg);
 }
 

@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { lazy, Suspense, useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import AuthForm from './components/auth/AuthForm';
-import MainApp from './components/MainApp';
+import RootRedirect from './routes/RootRedirect';
 import './styles/theme.css';
+
+const MainApp = lazy(() => import('./components/MainApp'));
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -20,7 +23,25 @@ const App: React.FC = () => {
       {!isAuthenticated ? (
         <AuthForm onSuccess={handleLoginSuccess} />
       ) : (
-        <MainApp onThemeChange={setIsDarkTheme} initialTheme={isDarkTheme} />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<RootRedirect />} />
+            <Route
+              path="/chat/:chatId"
+              element={
+                <Suspense
+                  fallback={<div aria-busy="true">Загрузка приложения…</div>}
+                >
+                  <MainApp
+                    onThemeChange={setIsDarkTheme}
+                    initialTheme={isDarkTheme}
+                  />
+                </Suspense>
+              }
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
       )}
     </>
   );

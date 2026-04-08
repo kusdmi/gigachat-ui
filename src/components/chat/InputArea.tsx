@@ -1,14 +1,25 @@
 import React, { useState } from 'react';
 import Button from '../ui/Button';
+import ErrorMessage from '../ui/ErrorMessage';
 import styles from './InputArea.module.css';
 
 interface InputAreaProps {
   onSend: (text: string) => void;
   onStop?: () => void;
   isLoading: boolean;
+  sendError?: string | null;
+  onRetry?: () => void;
+  onDismissError?: () => void;
 }
 
-const InputArea: React.FC<InputAreaProps> = ({ onSend, onStop, isLoading }) => {
+const InputArea: React.FC<InputAreaProps> = ({
+  onSend,
+  onStop,
+  isLoading,
+  sendError,
+  onRetry,
+  onDismissError,
+}) => {
   const [input, setInput] = useState('');
 
   const handleSend = () => {
@@ -29,6 +40,13 @@ const InputArea: React.FC<InputAreaProps> = ({ onSend, onStop, isLoading }) => {
 
   return (
     <div className={styles.container}>
+      {sendError ? (
+        <ErrorMessage
+          message={sendError}
+          onRetry={onRetry}
+          onDismiss={onDismissError}
+        />
+      ) : null}
       <textarea
         value={input}
         onChange={(e) => setInput(e.target.value)}

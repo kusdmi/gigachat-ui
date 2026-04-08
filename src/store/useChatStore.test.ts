@@ -17,6 +17,7 @@ function resetStore() {
     searchQuery: '',
     loadingChatId: null,
     abortController: null,
+    sendError: null,
   });
   localStorage.clear();
 }
