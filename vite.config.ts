@@ -4,8 +4,18 @@ import { visualizer } from 'rollup-plugin-visualizer';
 
 const analyze = process.env.ANALYZE === '1' || process.env.ANALYZE === 'true';
 
+/** Для GitHub Pages (репозиторий `https://user.github.io/REPO/`): задайте при сборке, например `GITHUB_PAGES_BASE=/gigachat-ui/` */
+const ghBase = process.env.GITHUB_PAGES_BASE?.trim();
+const base =
+  ghBase && ghBase !== '/'
+    ? ghBase.endsWith('/')
+      ? ghBase
+      : `${ghBase}/`
+    : '/';
+
 // https://vite.dev/config/
 export default defineConfig({
+  base,
   plugins: [
     react(),
     analyze

@@ -23,7 +23,7 @@ const App: React.FC = () => {
       {!isAuthenticated ? (
         <AuthForm onSuccess={handleLoginSuccess} />
       ) : (
-        <BrowserRouter>
+        <BrowserRouter basename={import.meta.env.BASE_URL}>
           <Routes>
             <Route path="/" element={<RootRedirect />} />
             <Route
