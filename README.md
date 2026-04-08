@@ -86,6 +86,8 @@
 |------------|----------|
 | `VITE_GIGACHAT_AUTH_KEY` | Данные для OAuth (как в кабинете разработчика Сбера; при лишнем префиксе `Basic ` клиент может его убрать — см. код API). |
 | `VITE_GIGACHAT_SCOPE` | Область OAuth, например `GIGACHAT_API_PERS`. |
+| `VITE_GIGACHAT_USE_RELATIVE_PROXY` | Если `true`, запросы идут на same-origin пути `/gigachat-oauth/…`, `/gigachat-api/…` (прокси Vite в dev, serverless в `api/` на Vercel). Нужно для работы API из браузера в продакшене без CORS-ошибки. |
+| `VITE_GIGACHAT_OAUTH_URL`, `VITE_GIGACHAT_CHAT_URL` | Необязательно: полные URL своего backend-прокси (например Cloudflare Worker), если фронт на статическом хостинге без серверного кода. |
 
 На хостинге задайте те же имена в разделе **Environment Variables** и выполните пересборку.
 
@@ -109,10 +111,12 @@ npm run build:analyze
 - **`/chat/:chatId`** — основной интерфейс чата.
 - Неизвестные пути перенаправляются на **`/`** (далее — на актуальный чат).
 
-**Vercel:** `vercel.json` — все запросы на `index.html`.  
-**Netlify:** `public/_redirects`.
+**Vercel:** `vercel.json` — сначала прокси `api/gigachat-oauth` и `api/gigachat-api`, остальное на `index.html`. Для работы GigaChat из браузера в продакшене задайте **`VITE_GIGACHAT_USE_RELATIVE_PROXY=true`** при сборке (см. `src/api/gigachat.ts`).  
+**Netlify:** `public/_redirects` для SPA; для API по аналогии с Vercel нужны отдельные функции-прокси (в репозитории пример под Vercel).
 
-**GitHub Pages:** собирайте с `GITHUB_PAGES_BASE=/имя-репо/` и `npm run deploy:github` (см. `package.json`). Если в консоли **404** на запросы к `/gigachat-oauth` или `/gigachat-api` — это ожидаемо на gh.io: в **production** клиент ходит на хосты Сбера напрямую (см. `src/api/gigachat.ts`). Если **404** у JS/CSS — пересоберите с правильным `GITHUB_PAGES_BASE` под имя репозитория.
+**Продакшен и GigaChat API:** прямой вызов хостов Сбера из браузера с другого домена блокируется **CORS**, поэтому пункт «API работает в продакшене» выполняется, если приложение задеплоено **с прокси**: например **Vercel** + переменная выше + каталог `api/`, либо фронт где угодно (в т.ч. **GitHub Pages**) + отдельный URL прокси в `VITE_GIGACHAT_OAUTH_URL` / `VITE_GIGACHAT_CHAT_URL`. Только статический **GitHub Pages без внешнего прокси** этого критерия не закрывает — на gh.io нельзя выполнить серверный запрос к Сберу.
+
+**GitHub Pages:** собирайте с `GITHUB_PAGES_BASE=/имя-репо/` и `npm run deploy:github` (см. `package.json`). **404** у JS/CSS — неверный `GITHUB_PAGES_BASE`. Запросы к `/gigachat-*` на gh.io без своего прокси не смогут достучаться до API Сбера (см. выше).
 
 ---
 
