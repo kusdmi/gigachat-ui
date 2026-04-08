@@ -66,6 +66,7 @@ export default defineConfig({
         target: 'https://ngw.devices.sberbank.ru:9443',
         changeOrigin: true,
         secure: false,
+        /** /gigachat-oauth/api/v2/oauth → https://ngw.../api/v2/oauth */
         rewrite: (path) => path.replace(/^\/gigachat-oauth/, ''),
       },
     },

@@ -31,6 +31,7 @@ function normalizeAuthKey(raw: string | undefined): string {
 }
 
 /** Прямые URL хостов Сбера — нужны в продакшене (GitHub Pages и т.д.), где нет dev-прокси Vite. */
+/** OAuth: документация «Получить токен» — POST `https://ngw.../api/v2/oauth` (form-urlencoded + Basic + RqUID). */
 const PROD_OAUTH_URL = 'https://ngw.devices.sberbank.ru:9443/api/v2/oauth';
 const PROD_CHAT_URL =
   'https://gigachat.devices.sberbank.ru/api/v1/chat/completions';
